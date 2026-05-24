@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🇧🇷 Tracker Brasil</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f7;color:#1a1a1a;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:0 0 80px}
+.header{background:#534AB7;color:white;padding:16px 20px 12px;position:sticky;top:0;z-index:100}
+.header h1{font-size:17px;font-weight:600;margin-bottom:2px}
+.header p{font-size:12px;opacity:.75}
+.tabs{display:flex;background:#fff;border-bottom:1px solid #e5e5e5;position:sticky;top:56px;z-index:99}
+.tab{flex:1;padding:10px 4px;font-size:11px;font-weight:500;border:none;background:transparent;color:#888;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-bottom:2px solid transparent;font-family:inherit}
+.tab .ico{font-size:18px}
+.tab.active{color:#534AB7;border-bottom-color:#534AB7}
+.page{display:none;padding:14px 16px}
+.page.active{display:block}
+.slabel{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.card{background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.metric{background:#f5f5f7;border-radius:10px;padding:10px 12px}
+.metric-label{font-size:11px;color:#888;margin-bottom:3px}
+.metric-val{font-size:20px;font-weight:600}
+.metric-sub{font-size:10px;color:#aaa;margin-top:2px;line-height:1.4}
+.ok{color:#2d7a0a}.warn{color:#b07800}.danger{color:#b02020}
+.bar{height:5px;background:#e5e5e5;border-radius:3px;margin-top:7px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.field-label{font-size:12px;color:#555;margin-bottom:5px;margin-top:10px;font-weight:500}
+input,select{width:100%;font-size:15px;padding:9px 12px;border:1px solid #ddd;border-radius:10px;background:#fff;color:#1a1a1a;font-family:inherit;-webkit-appearance:none}
+input:focus,select:focus{outline:none;border-color:#534AB7}
+.btn-primary{width:100%;padding:13px;font-size:15px;font-weight:600;border:none;border-radius:12px;background:#534AB7;color:white;cursor:pointer;font-family:inherit;margin-top:12px;letter-spacing:.01em}
+.btn-primary:active{background:#3C3489;transform:scale(.98)}
+.btn-primary.green{background:#2d7a0a}
+.btn-primary.green:active{background:#1e5706}
+.btn-sm{padding:7px 14px;font-size:13px;border:1px solid #ddd;border-radius:8px;background:#f5f5f7;color:#333;cursor:pointer;font-family:inherit;font-weight:500}
+.split-btns{display:flex;gap:6px;flex-wrap:wrap}
+.spl{padding:7px 13px;font-size:13px;border:1px solid #ddd;border-radius:8px;background:#f5f5f7;color:#333;cursor:pointer;font-family:inherit;font-weight:500}
+.spl.active{background:#534AB7;color:white;border-color:#534AB7}
+.preview-box{background:#f0effe;border-radius:10px;padding:10px 13px;margin-top:10px;font-size:13px;color:#555;line-height:1.7}
+.preview-box strong{color:#1a1a1a}
+.list-item{padding:11px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:10px}
+.list-item:last-child{border-bottom:none}
+.item-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:#f5f5f7}
+.item-info{flex:1;min-width:0}
+.item-title{font-size:13px;font-weight:600;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-sub{font-size:11px;color:#888;margin-top:1px}
+.item-right{text-align:right;flex-shrink:0}
+.item-val{font-size:13px;font-weight:600}
+.item-sub2{font-size:10px;color:#aaa}
+.del{background:none;border:none;cursor:pointer;color:#ccc;padding:6px;font-size:18px;line-height:1}
+.del:active{color:#d00}
+.empty{padding:2rem 1rem;text-align:center;color:#aaa;font-size:14px;line-height:1.8}
+.alert{background:#fff8e6;border:1px solid #f5c842;border-radius:10px;padding:9px 13px;font-size:12px;color:#7a5500;margin-bottom:8px;display:flex;align-items:flex-start;gap:7px;line-height:1.5}
+.rate-banner{background:#f0effe;border-radius:10px;padding:10px 13px;display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.rate-banner label{font-size:13px;color:#534AB7;font-weight:600;white-space:nowrap}
+.rate-banner input{font-size:15px;font-weight:600;border:none;background:transparent;padding:0;color:#534AB7;width:90px;text-align:right}
+.rate-banner input:focus{outline:none;border-bottom:2px solid #534AB7}
+.rate-hint{font-size:11px;color:#888;width:100%;margin-top:2px}
+.budget-edit{background:#f5f5f7;border-radius:10px;padding:12px;margin-bottom:8px}
+.budget-edit-label{font-size:12px;color:#555;font-weight:600;margin-bottom:8px}
+.budget-edit-row{display:flex;align-items:center;gap:8px}
+.budget-edit-row input{flex:1;font-size:16px;font-weight:600}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.success-msg{font-size:13px;color:#2d7a0a;margin-top:8px;display:none}
+.danger-zone{border:1px solid #ffcccc;border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.danger-zone .slabel{color:#c00}
+.danger-zone p{font-size:13px;color:#888;margin-bottom:10px;line-height:1.5}
+.total-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.total-item{text-align:center;background:#f5f5f7;border-radius:10px;padding:10px 6px}
+.total-item .tl{font-size:10px;color:#888;margin-bottom:4px}
+.total-item .tv{font-size:16px;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>🇧🇷 Tracker Brasil</h1>
+    <p>Rio de Janeiro &amp; Ilha Grande</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="goTab('dashboard')">
+      <span class="ico">📊</span> Dashboard
+    </button>
+    <button class="tab" onclick="goTab('cambiar')">
+      <span class="ico">💱</span> Cambiar
+    </button>
+    <button class="tab" onclick="goTab('gastar')">
+      <span class="ico">🧾</span> Gastar
+    </button>
+    <button class="tab" onclick="goTab('historial')">
+      <span class="ico">📋</span> Lista
+    </button>
+    <button class="tab" onclick="goTab('config')">
+      <span class="ico">⚙️</span> Config
+    </button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div id="alerts"></div>
+    <div class="slabel">Reales en el bolsillo</div>
+    <div class="grid2" id="brl-cards"></div>
+    <div class="slabel">Pesos sin cambiar (en Prex)</div>
+    <div class="grid2" id="uyu-cards"></div>
+    <div class="slabel">Resumen total</div>
+    <div id="total-card"></div>
+  </div>
+
+  <!-- CAMBIAR -->
+  <div class="page" id="page-cambiar">
+    <div class="rate-banner">
+      <label>R$ 1 =</label>
+      <input type="number" id="c-rate" value="8.4342" step="0.001" min="1" oninput="updatePreview()">
+      <label>$ UYU</label>
+      <div class="rate-hint">Cotización del día — igual que muestra Prex</div>
+    </div>
+    <div class="card">
+      <div class="slabel">¿Cuánto cambia cada uno?</div>
+      <div class="field-label">UYU que cambia Yo</div>
+      <input type="number" id="c-uyu-yo" placeholder="0" step="100" min="0" inputmode="numeric" oninput="updatePreview()">
+      <div class="field-label">UYU que cambia Ella</div>
+      <input type="number" id="c-uyu-ella" placeholder="0" step="100" min="0" inputmode="numeric" oninput="updatePreview()">
+      <div class="preview-box" id="c-preview">Ingresá los montos para ver el resultado.</div>
+      <button class="btn-primary green" onclick="addExchange()">💱 Registrar cambio</button>
+    </div>
+    <div class="slabel">Historial de cambios</div>
+    <div class="card" style="padding:0;overflow:hidden" id="exchange-list">
+      <div class="empty">Sin cambios aún</div>
+    </div>
+  </div>
+
+  <!-- GASTAR -->
+  <div class="page" id="page-gastar">
+    <div class="card">
+      <div class="slabel">Registrar gasto</div>
+      <div class="field-label">Descripción</div>
+      <input type="text" id="g-desc" placeholder="Ej: Cena en Santa Teresa">
+      <div class="field-label">Monto en reales (R$)</div>
+      <input type="number" id="g-amount" placeholder="0.00" step="0.01" min="0" inputmode="decimal" oninput="updateGastoPreview()">
+      <div class="field-label">Categoría</div>
+      <select id="g-cat">
+        <option value="🍽️">🍽️ Comida</option>
+        <option value="🚌">🚌 Transporte</option>
+        <option value="🏖️">🏖️ Paseo / tour</option>
+        <option value="🛍️">🛍️ Ropa / compras</option>
+        <option value="🏨">🏨 Alojamiento</option>
+        <option value="🍺">🍺 Bebidas / bar</option>
+        <option value="💊">💊 Farmacia</option>
+        <option value="📦">📦 Otro</option>
+      </select>
+      <div class="field-label">División del gasto</div>
+      <div class="split-btns">
+        <button class="spl active" onclick="setSplit('50/50',this)">50 / 50</button>
+        <button class="spl" onclick="setSplit('yo',this)">Solo Yo</button>
+        <button class="spl" onclick="setSplit('ella',this)">Solo Ella</button>
+        <button class="spl" onclick="setSplit('custom',this)">Personalizado</button>
+      </div>
+      <div id="custom-fields" style="display:none" class="row2">
+        <div>
+          <div class="field-label">Yo pago (R$)</div>
+          <input type="number" id="g-yo" placeholder="0" step="0.01" inputmode="decimal" oninput="updateGastoPreview()">
+        </div>
+        <div>
+          <div class="field-label">Ella paga (R$)</div>
+          <input type="number" id="g-ella" placeholder="0" step="0.01" inputmode="decimal" oninput="updateGastoPreview()">
+        </div>
+      </div>
+      <div class="preview-box" id="g-preview">Ingresá el monto para ver la división.</div>
+      <button class="btn-primary" onclick="addGasto()">+ Agregar gasto</button>
+    </div>
+  </div>
+
+  <!-- HISTORIAL -->
+  <div class="page" id="page-historial">
+    <div class="slabel">Gastos registrados</div>
+    <div class="card" style="padding:0;overflow:hidden" id="gasto-list">
+      <div class="empty">Sin gastos aún<br>🇧🇷</div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div class="page" id="page-config">
+    <div class="card">
+      <div class="slabel">Presupuestos</div>
+      <p style="font-size:13px;color:#888;margin-bottom:12px;line-height:1.6">Ajustá si alguien suma más plata al viaje. Los cambios ya registrados no se modifican.</p>
+      <div class="budget-edit">
+        <div class="budget-edit-label">Presupuesto — Yo (UYU)</div>
+        <div class="budget-edit-row">
+          <input type="number" id="cfg-yo" step="500" min="0" inputmode="numeric">
+          <button class="btn-sm" onclick="saveBudget('yo')">✓ Guardar</button>
+        </div>
+      </div>
+      <div class="budget-edit">
+        <div class="budget-edit-label">Presupuesto — Ella (UYU)</div>
+        <div class="budget-edit-row">
+          <input type="number" id="cfg-ella" step="500" min="0" inputmode="numeric">
+          <button class="btn-sm" onclick="saveBudget('ella')">✓ Guardar</button>
+        </div>
+      </div>
+      <div class="success-msg" id="cfg-msg">✅ Presupuesto actualizado</div>
+    </div>
+
+    <div class="danger-zone">
+      <div class="slabel">Zona de peligro</div>
+      <p>Borra todos los gastos y cambios registrados. No se puede deshacer.</p>
+      <button class="btn-sm" style="color:#c00;border-color:#ffaaaa" onclick="resetAll()">🗑 Resetear todo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEFAULT_B = { yo: 30000, ella: 17500 };
+let budgets = JSON.parse(localStorage.getItem('brl_budgets') || JSON.stringify(DEFAULT_B));
+let exchanges = JSON.parse(localStorage.getItem('brl_ex') || '[]');
+let gastos = JSON.parse(localStorage.getItem('brl_gs') || '[]');
+let splitMode = '50/50';
+
+function save(){
+  localStorage.setItem('brl_budgets', JSON.stringify(budgets));
+  localStorage.setItem('brl_ex', JSON.stringify(exchanges));
+  localStorage.setItem('brl_gs', JSON.stringify(gastos));
+}
+
+function fmt(n){ return Math.round(n).toLocaleString('es-UY'); }
+function fmtR(n){ return (+n).toFixed(0); }
+function today(){ return new Date().toLocaleDateString('es-UY'); }
+function getRate(){ return parseFloat(document.getElementById('c-rate').value) || 8.4342; }
+
+function derived(){
+  const exchYo = exchanges.reduce((s,e)=>s+e.uyuYo,0);
+  const exchElla = exchanges.reduce((s,e)=>s+e.uyuElla,0);
+  const brlRcvYo = exchanges.reduce((s,e)=>s+e.brlYo,0);
+  const brlRcvElla = exchanges.reduce((s,e)=>s+e.brlElla,0);
+  const brlSpentYo = gastos.reduce((s,g)=>s+g.yo,0);
+  const brlSpentElla = gastos.reduce((s,g)=>s+g.ella,0);
+  return {
+    exchYo, exchElla,
+    remUYUYo: budgets.yo - exchYo,
+    remUYUElla: budgets.ella - exchElla,
+    brlRcvYo, brlRcvElla,
+    brlAvailYo: brlRcvYo - brlSpentYo,
+    brlAvailElla: brlRcvElla - brlSpentElla,
+    brlSpentYo, brlSpentElla,
+    totalBRLAvail: (brlRcvYo - brlSpentYo) + (brlRcvElla - brlSpentElla),
+    totalBRLSpent: brlSpentYo + brlSpentElla
+  };
+}
+
+function goTab(t){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+t).classList.add('active');
+  const tabs = ['dashboard','cambiar','gastar','historial','config'];
+  document.querySelectorAll('.tab')[tabs.indexOf(t)].classList.add('active');
+  if(t==='dashboard') renderDashboard();
+  if(t==='cambiar') renderExchanges();
+  if(t==='historial') renderHistorial();
+  if(t==='config') loadConfig();
+  window.scrollTo(0,0);
+}
+
+function colorVal(v){
+  if(v<=0) return 'danger';
+  if(v<=200) return 'warn';
+  return 'ok';
+}
+
+function renderDashboard(){
+  const d = derived();
+  let alertsHTML = '';
+  if(d.brlRcvYo > 0 && d.brlAvailYo < 200)
+    alertsHTML += `<div class="alert">⚠️ <span>Yo tengo pocos reales (R$ ${fmtR(Math.max(0,d.brlAvailYo))}). Considerá cambiar más.</span></div>`;
+  if(d.brlRcvElla > 0 && d.brlAvailElla < 200)
+    alertsHTML += `<div class="alert">⚠️ <span>Ella tiene pocos reales (R$ ${fmtR(Math.max(0,d.brlAvailElla))}). Considerá cambiar más.</span></div>`;
+  document.getElementById('alerts').innerHTML = alertsHTML;
+
+  const pBrlYo = d.brlRcvYo > 0 ? Math.min(100, Math.round(d.brlSpentYo/d.brlRcvYo*100)) : 0;
+  const pBrlEl = d.brlRcvElla > 0 ? Math.min(100, Math.round(d.brlSpentElla/d.brlRcvElla*100)) : 0;
+  document.getElementById('brl-cards').innerHTML = `
+    <div class="metric">
+      <div class="metric-label">Yo — disponibles</div>
+      <div class="metric-val ${colorVal(d.brlAvailYo)}">R$ ${fmtR(Math.max(0,d.brlAvailYo))}</div>
+      <div class="metric-sub">Recibí R$${fmtR(d.brlRcvYo)}<br>Gasté R$${fmtR(d.brlSpentYo)}</div>
+      <div class="bar"><div class="bar-fill" style="width:${pBrlYo}%;background:#2d7a0a"></div></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Ella — disponibles</div>
+      <div class="metric-val ${colorVal(d.brlAvailElla)}">R$ ${fmtR(Math.max(0,d.brlAvailElla))}</div>
+      <div class="metric-sub">Recibió R$${fmtR(d.brlRcvElla)}<br>Gastó R$${fmtR(d.brlSpentElla)}</div>
+      <div class="bar"><div class="bar-fill" style="width:${pBrlEl}%;background:#534AB7"></div></div>
+    </div>`;
+
+  const pUYUYo = Math.min(100, Math.round(d.exchYo/budgets.yo*100));
+  const pUYUEl = Math.min(100, Math.round(d.exchElla/budgets.ella*100));
+  document.getElementById('uyu-cards').innerHTML = `
+    <div class="metric">
+      <div class="metric-label">Yo — sin cambiar</div>
+      <div class="metric-val">$${fmt(Math.max(0,d.remUYUYo))}</div>
+      <div class="metric-sub">de $${fmt(budgets.yo)}<br>presupuestado</div>
+      <div class="bar"><div class="bar-fill" style="width:${pUYUYo}%;background:#aaa"></div></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Ella — sin cambiar</div>
+      <div class="metric-val">$${fmt(Math.max(0,d.remUYUElla))}</div>
+      <div class="metric-sub">de $${fmt(budgets.ella)}<br>presupuestado</div>
+      <div class="bar"><div class="bar-fill" style="width:${pUYUEl}%;background:#aaa"></div></div>
+    </div>`;
+
+  const remUYU = (budgets.yo + budgets.ella) - (d.exchYo + d.exchElla);
+  document.getElementById('total-card').innerHTML = `
+    <div class="card">
+      <div class="total-row">
+        <div class="total-item"><div class="tl">Prex (sin cambiar)</div><div class="tv">$${fmt(Math.max(0,remUYU))}</div></div>
+        <div class="total-item"><div class="tl">Reales disponibles</div><div class="tv">R$${fmtR(Math.max(0,d.totalBRLAvail))}</div></div>
+        <div class="total-item"><div class="tl">Total gastado</div><div class="tv">R$${fmtR(d.totalBRLSpent)}</div></div>
+      </div>
+    </div>`;
+}
+
+function updatePreview(){
+  const rate = getRate();
+  const uYo = parseFloat(document.getElementById('c-uyu-yo').value)||0;
+  const uElla = parseFloat(document.getElementById('c-uyu-ella').value)||0;
+  if(!uYo && !uElla){ document.getElementById('c-preview').innerHTML='Ingresá los montos para ver el resultado.'; return; }
+  const bYo = uYo / rate;
+  const bElla = uElla / rate;
+  document.getElementById('c-preview').innerHTML =
+    `Yo: <strong>$${fmt(uYo)} UYU → R$ ${fmtR(bYo)}</strong><br>Ella: <strong>$${fmt(uElla)} UYU → R$ ${fmtR(bElla)}</strong><br><span style="font-size:11px;color:#aaa">R$ 1 = $${rate} UYU</span>`;
+}
+
+function addExchange(){
+  const rate = getRate();
+  const uYo = parseFloat(document.getElementById('c-uyu-yo').value)||0;
+  const uElla = parseFloat(document.getElementById('c-uyu-ella').value)||0;
+  const d = derived();
+  if(!uYo && !uElla){ alert('Ingresá al menos un monto.'); return; }
+  if(uYo > d.remUYUYo){ alert(`Yo no tengo suficientes pesos.\nDisponible: $${fmt(d.remUYUYo)}`); return; }
+  if(uElla > d.remUYUElla){ alert(`Ella no tiene suficientes pesos.\nDisponible: $${fmt(d.remUYUElla)}`); return; }
+  exchanges.push({ date:today(), uyuYo:uYo, uyuElla:uElla, rate, brlYo:uYo/rate, brlElla:uElla/rate });
+  save();
+  document.getElementById('c-uyu-yo').value='';
+  document.getElementById('c-uyu-ella').value='';
+  document.getElementById('c-preview').innerHTML='Ingresá los montos para ver el resultado.';
+  renderExchanges();
+  goTab('dashboard');
+}
+
+function renderExchanges(){
+  const el = document.getElementById('exchange-list');
+  if(!exchanges.length){ el.innerHTML='<div class="empty">Sin cambios registrados</div>'; return; }
+  el.innerHTML = [...exchanges].reverse().map((e,ri)=>{
+    const i = exchanges.length-1-ri;
+    return `<div class="list-item">
+      <div class="item-icon">💱</div>
+      <div class="item-info">
+        <div class="item-title">${e.date} · R$1 = $${e.rate}</div>
+        <div class="item-sub">Yo: $${fmt(e.uyuYo)} → R$${fmtR(e.brlYo)} &nbsp;·&nbsp; Ella: $${fmt(e.uyuElla)} → R$${fmtR(e.brlElla)}</div>
+      </div>
+      <button class="del" onclick="delExchange(${i})">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+function delExchange(i){
+  if(confirm('¿Eliminar este cambio?')){ exchanges.splice(i,1); save(); renderExchanges(); }
+}
+
+function setSplit(mode,btn){
+  splitMode = mode;
+  document.querySelectorAll('.spl').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('custom-fields').style.display = mode==='custom'?'grid':'none';
+  updateGastoPreview();
+}
+
+function calcGastoSplit(total){
+  if(splitMode==='50/50') return {yo:total/2, ella:total/2};
+  if(splitMode==='yo') return {yo:total, ella:0};
+  if(splitMode==='ella') return {yo:0, ella:total};
+  const yo = parseFloat(document.getElementById('g-yo').value)||0;
+  const ella = parseFloat(document.getElementById('g-ella').value)||0;
+  return {yo, ella};
+}
+
+function updateGastoPreview(){
+  const amt = parseFloat(document.getElementById('g-amount').value)||0;
+  if(!amt){ document.getElementById('g-preview').innerHTML='Ingresá el monto para ver la división.'; return; }
+  const s = calcGastoSplit(amt);
+  const d = derived();
+  const wY = s.yo > d.brlAvailYo ? ` ⚠️` : '';
+  const wE = s.ella > d.brlAvailElla ? ` ⚠️` : '';
+  document.getElementById('g-preview').innerHTML =
+    `Yo pago: <strong>R$ ${s.yo.toFixed(2)}</strong>${wY}<br>Ella paga: <strong>R$ ${s.ella.toFixed(2)}</strong>${wE}`;
+}
+
+function addGasto(){
+  const desc = document.getElementById('g-desc').value.trim();
+  const amt = parseFloat(document.getElementById('g-amount').value);
+  const cat = document.getElementById('g-cat').value;
+  if(!desc||!amt||amt<=0){ alert('Completá descripción y monto.'); return; }
+  const s = calcGastoSplit(amt);
+  gastos.push({ desc, amount:amt, cat, yo:s.yo, ella:s.ella, date:today() });
+  save();
+  document.getElementById('g-desc').value='';
+  document.getElementById('g-amount').value='';
+  document.getElementById('g-yo').value='';
+  document.getElementById('g-ella').value='';
+  document.getElementById('g-preview').innerHTML='Ingresá el monto para ver la división.';
+  goTab('dashboard');
+}
+
+function renderHistorial(){
+  const el = document.getElementById('gasto-list');
+  if(!gastos.length){ el.innerHTML='<div class="empty">Sin gastos registrados<br>🇧🇷</div>'; return; }
+  el.innerHTML = [...gastos].reverse().map((g,ri)=>{
+    const i = gastos.length-1-ri;
+    const lbl = g.yo===g.ella?'50/50': g.ella===0?'Solo Yo': g.yo===0?'Solo Ella':`Yo R$${fmtR(g.yo)} / Ella R$${fmtR(g.ella)}`;
+    return `<div class="list-item">
+      <div class="item-icon">${g.cat}</div>
+      <div class="item-info">
+        <div class="item-title">${g.desc}</div>
+        <div class="item-sub">${g.date} · ${lbl}</div>
+      </div>
+      <div class="item-right">
+        <div class="item-val">R$ ${g.amount.toFixed(2)}</div>
+        <div class="item-sub2">Yo R$${fmtR(g.yo)} / Ella R$${fmtR(g.ella)}</div>
+      </div>
+      <button class="del" onclick="delGasto(${i})">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+function delGasto(i){
+  if(confirm('¿Eliminar este gasto?')){ gastos.splice(i,1); save(); renderHistorial(); }
+}
+
+function loadConfig(){
+  document.getElementById('cfg-yo').value = budgets.yo;
+  document.getElementById('cfg-ella').value = budgets.ella;
+  document.getElementById('cfg-msg').style.display='none';
+}
+
+function saveBudget(who){
+  const val = parseFloat(document.getElementById('cfg-'+who).value)||0;
+  budgets[who] = val;
+  save();
+  const msg = document.getElementById('cfg-msg');
+  msg.style.display='block';
+  setTimeout(()=>msg.style.display='none', 2500);
+}
+
+function resetAll(){
+  if(confirm('¿Seguro? Se borran TODOS los datos.')){
+    exchanges=[]; gastos=[]; budgets={...DEFAULT_B};
+    save(); goTab('dashboard');
+  }
+}
+
+renderDashboard();
+</script>
+</body>
+</html>
