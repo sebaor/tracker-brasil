@@ -4,14 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🇧🇷 Tracker Brasil</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#534AB7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f7;color:#1a1a1a;min-height:100vh}
 .app{max-width:480px;margin:0 auto;padding:0 0 80px}
+.offline-bar{background:#b07800;color:white;font-size:11px;text-align:center;padding:5px;display:none}
+.offline-bar.show{display:block}
 .header{background:#534AB7;color:white;padding:16px 20px 12px;position:sticky;top:0;z-index:100}
 .header h1{font-size:17px;font-weight:600;margin-bottom:2px}
 .header p{font-size:12px;opacity:.75}
-.tabs{display:flex;background:#fff;border-bottom:1px solid #e5e5e5;position:sticky;top:56px;z-index:99}
+.sync-status{font-size:10px;margin-top:3px;opacity:.85}
+.tabs{display:flex;background:#fff;border-bottom:1px solid #e5e5e5;position:sticky;top:60px;z-index:99}
 .tab{flex:1;padding:10px 4px;font-size:11px;font-weight:500;border:none;background:transparent;color:#888;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-bottom:2px solid transparent;font-family:inherit}
 .tab .ico{font-size:18px}
 .tab.active{color:#534AB7;border-bottom-color:#534AB7}
@@ -32,8 +39,7 @@ input,select{width:100%;font-size:15px;padding:9px 12px;border:1px solid #ddd;bo
 input:focus,select:focus{outline:none;border-color:#534AB7}
 .btn-primary{width:100%;padding:13px;font-size:15px;font-weight:600;border:none;border-radius:12px;background:#534AB7;color:white;cursor:pointer;font-family:inherit;margin-top:12px;letter-spacing:.01em}
 .btn-primary:active{background:#3C3489;transform:scale(.98)}
-.btn-primary.green{background:#2d7a0a}
-.btn-primary.green:active{background:#1e5706}
+.btn-primary.green{background:#2d7a0a}.btn-primary.green:active{background:#1e5706}
 .btn-sm{padding:7px 14px;font-size:13px;border:1px solid #ddd;border-radius:8px;background:#f5f5f7;color:#333;cursor:pointer;font-family:inherit;font-weight:500}
 .split-btns{display:flex;gap:6px;flex-wrap:wrap}
 .spl{padding:7px 13px;font-size:13px;border:1px solid #ddd;border-radius:8px;background:#f5f5f7;color:#333;cursor:pointer;font-family:inherit;font-weight:500}
@@ -71,35 +77,29 @@ input:focus,select:focus{outline:none;border-color:#534AB7}
 .total-item{text-align:center;background:#f5f5f7;border-radius:10px;padding:10px 6px}
 .total-item .tl{font-size:10px;color:#888;margin-bottom:4px}
 .total-item .tv{font-size:16px;font-weight:600}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
 </style>
 </head>
 <body>
+
+<div class="offline-bar" id="offline-bar">📵 Sin conexión — los cambios se guardarán al reconectar</div>
 
 <div class="app">
   <div class="header">
     <h1>🇧🇷 Tracker Brasil</h1>
     <p>Rio de Janeiro &amp; Ilha Grande</p>
+    <div class="sync-status" id="sync-status">Conectando...</div>
   </div>
 
   <div class="tabs">
-    <button class="tab active" onclick="goTab('dashboard')">
-      <span class="ico">📊</span> Dashboard
-    </button>
-    <button class="tab" onclick="goTab('cambiar')">
-      <span class="ico">💱</span> Cambiar
-    </button>
-    <button class="tab" onclick="goTab('gastar')">
-      <span class="ico">🧾</span> Gastar
-    </button>
-    <button class="tab" onclick="goTab('historial')">
-      <span class="ico">📋</span> Lista
-    </button>
-    <button class="tab" onclick="goTab('config')">
-      <span class="ico">⚙️</span> Config
-    </button>
+    <button class="tab active" onclick="goTab('dashboard')"><span class="ico">📊</span> Dashboard</button>
+    <button class="tab" onclick="goTab('cambiar')"><span class="ico">💱</span> Cambiar</button>
+    <button class="tab" onclick="goTab('gastar')"><span class="ico">🧾</span> Gastar</button>
+    <button class="tab" onclick="goTab('historial')"><span class="ico">📋</span> Lista</button>
+    <button class="tab" onclick="goTab('config')"><span class="ico">⚙️</span> Config</button>
   </div>
 
-  <!-- DASHBOARD -->
   <div class="page active" id="page-dashboard">
     <div id="alerts"></div>
     <div class="slabel">Reales en el bolsillo</div>
@@ -110,7 +110,6 @@ input:focus,select:focus{outline:none;border-color:#534AB7}
     <div id="total-card"></div>
   </div>
 
-  <!-- CAMBIAR -->
   <div class="page" id="page-cambiar">
     <div class="rate-banner">
       <label>R$ 1 =</label>
@@ -133,7 +132,6 @@ input:focus,select:focus{outline:none;border-color:#534AB7}
     </div>
   </div>
 
-  <!-- GASTAR -->
   <div class="page" id="page-gastar">
     <div class="card">
       <div class="slabel">Registrar gasto</div>
@@ -174,7 +172,6 @@ input:focus,select:focus{outline:none;border-color:#534AB7}
     </div>
   </div>
 
-  <!-- HISTORIAL -->
   <div class="page" id="page-historial">
     <div class="slabel">Gastos registrados</div>
     <div class="card" style="padding:0;overflow:hidden" id="gasto-list">
@@ -182,11 +179,10 @@ input:focus,select:focus{outline:none;border-color:#534AB7}
     </div>
   </div>
 
-  <!-- CONFIG -->
   <div class="page" id="page-config">
     <div class="card">
       <div class="slabel">Presupuestos</div>
-      <p style="font-size:13px;color:#888;margin-bottom:12px;line-height:1.6">Ajustá si alguien suma más plata al viaje. Los cambios ya registrados no se modifican.</p>
+      <p style="font-size:13px;color:#888;margin-bottom:12px;line-height:1.6">Ajustá si alguien suma más plata al viaje.</p>
       <div class="budget-edit">
         <div class="budget-edit-label">Presupuesto — Yo (UYU)</div>
         <div class="budget-edit-row">
@@ -203,7 +199,6 @@ input:focus,select:focus{outline:none;border-color:#534AB7}
       </div>
       <div class="success-msg" id="cfg-msg">✅ Presupuesto actualizado</div>
     </div>
-
     <div class="danger-zone">
       <div class="slabel">Zona de peligro</div>
       <p>Borra todos los gastos y cambios registrados. No se puede deshacer.</p>
@@ -212,37 +207,143 @@ input:focus,select:focus{outline:none;border-color:#534AB7}
   </div>
 </div>
 
-<script>
-const DEFAULT_B = { yo: 30000, ella: 17500 };
-let budgets = JSON.parse(localStorage.getItem('brl_budgets') || JSON.stringify(DEFAULT_B));
-let exchanges = JSON.parse(localStorage.getItem('brl_ex') || '[]');
-let gastos = JSON.parse(localStorage.getItem('brl_gs') || '[]');
-let splitMode = '50/50';
+<div class="toast" id="toast"></div>
 
-function save(){
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://gsfvugbjhuddnuvzthcd.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzZnZ1Z2JqaHVkZG51dnp0aGNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MzQ2MDgsImV4cCI6MjA5NTIxMDYwOH0.hsKXyaHOHXY-crwoMGWtJ-FpN-9KBG6u6cUZRqo05QA';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const DEFAULT_B = { yo: 30000, ella: 17500 };
+let budgets = {...DEFAULT_B};
+let exchanges = [];
+let gastos = [];
+let splitMode = '50/50';
+let pending = JSON.parse(localStorage.getItem('brl_pending') || '[]');
+let isOnline = navigator.onLine;
+let currentTab = 'dashboard';
+
+// ── Toast ──────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ── Connectivity ───────────────────────────────────────────────
+function updateOfflineBar() {
+  document.getElementById('offline-bar').classList.toggle('show', !isOnline);
+  document.getElementById('sync-status').textContent = isOnline ? '☁️ Sincronizado' : '📵 Modo offline';
+}
+
+window.addEventListener('online', async () => {
+  isOnline = true;
+  updateOfflineBar();
+  await processPending();
+  await loadFromDB();
+  renderCurrent();
+  toast('✅ Reconectado y sincronizado');
+});
+
+window.addEventListener('offline', () => {
+  isOnline = false;
+  updateOfflineBar();
+  toast('📵 Sin conexión — datos guardados localmente');
+});
+
+// ── Cache local ────────────────────────────────────────────────
+function saveCache() {
   localStorage.setItem('brl_budgets', JSON.stringify(budgets));
   localStorage.setItem('brl_ex', JSON.stringify(exchanges));
   localStorage.setItem('brl_gs', JSON.stringify(gastos));
 }
 
-function fmt(n){ return Math.round(n).toLocaleString('es-UY'); }
-function fmtR(n){ return (+n).toFixed(0); }
-function today(){ return new Date().toLocaleDateString('es-UY'); }
-function getRate(){ return parseFloat(document.getElementById('c-rate').value) || 8.4342; }
+function loadCache() {
+  budgets = JSON.parse(localStorage.getItem('brl_budgets') || JSON.stringify(DEFAULT_B));
+  exchanges = JSON.parse(localStorage.getItem('brl_ex') || '[]');
+  gastos = JSON.parse(localStorage.getItem('brl_gs') || '[]');
+}
 
-function derived(){
-  const exchYo = exchanges.reduce((s,e)=>s+e.uyuYo,0);
-  const exchElla = exchanges.reduce((s,e)=>s+e.uyuElla,0);
-  const brlRcvYo = exchanges.reduce((s,e)=>s+e.brlYo,0);
-  const brlRcvElla = exchanges.reduce((s,e)=>s+e.brlElla,0);
-  const brlSpentYo = gastos.reduce((s,g)=>s+g.yo,0);
-  const brlSpentElla = gastos.reduce((s,g)=>s+g.ella,0);
+// ── Cola offline ───────────────────────────────────────────────
+function savePending() {
+  localStorage.setItem('brl_pending', JSON.stringify(pending));
+}
+
+async function processPending() {
+  if (!pending.length) return;
+  const done = [];
+  for (const op of pending) {
+    try {
+      if (op.op === 'insert_exchange')   await db.from('exchanges').insert(op.data);
+      else if (op.op === 'delete_exchange') await db.from('exchanges').delete().eq('id', op.id);
+      else if (op.op === 'insert_gasto')    await db.from('gastos').insert(op.data);
+      else if (op.op === 'delete_gasto')    await db.from('gastos').delete().eq('id', op.id);
+      else if (op.op === 'upsert_budget')   await db.from('budgets').upsert(op.data);
+      else if (op.op === 'delete_all') {
+        await db.from('exchanges').delete().not('id', 'is', null);
+        await db.from('gastos').delete().not('id', 'is', null);
+        await db.from('budgets').upsert([{id:'yo',amount:DEFAULT_B.yo},{id:'ella',amount:DEFAULT_B.ella}]);
+      }
+      done.push(op);
+    } catch(e) { console.error('Pending op failed:', op, e); }
+  }
+  pending = pending.filter(p => !done.includes(p));
+  savePending();
+}
+
+// ── Carga desde Supabase ───────────────────────────────────────
+async function loadFromDB() {
+  const [{ data: bData }, { data: eData }, { data: gData }] = await Promise.all([
+    db.from('budgets').select('*'),
+    db.from('exchanges').select('*').order('created_at', { ascending: true }),
+    db.from('gastos').select('*').order('created_at', { ascending: true })
+  ]);
+  if (bData) budgets = {
+    yo:   bData.find(x => x.id === 'yo')?.amount   ?? DEFAULT_B.yo,
+    ella: bData.find(x => x.id === 'ella')?.amount ?? DEFAULT_B.ella
+  };
+  if (eData) exchanges = eData.map(e => ({
+    id: e.id, date: e.date,
+    uyuYo: e.uyu_yo, uyuElla: e.uyu_ella,
+    rate: e.rate, brlYo: e.brl_yo, brlElla: e.brl_ella
+  }));
+  if (gData) gastos = gData.map(g => ({
+    id: g.id, date: g.date,
+    desc: g.descripcion, amount: g.amount,
+    cat: g.cat, yo: g.yo, ella: g.ella
+  }));
+  saveCache();
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function fmt(n)  { return Math.round(n).toLocaleString('es-UY'); }
+function fmtR(n) { return (+n).toFixed(0); }
+function today() { return new Date().toLocaleDateString('es-UY'); }
+function getRate(){ return parseFloat(document.getElementById('c-rate').value) || 8.4342; }
+function uid() {
+  return crypto.randomUUID
+    ? crypto.randomUUID()
+    : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random()*16|0; return (c==='x'?r:(r&0x3|0x8)).toString(16);
+      });
+}
+
+// ── Derived state ──────────────────────────────────────────────
+function derived() {
+  const exchYo       = exchanges.reduce((s,e) => s+e.uyuYo, 0);
+  const exchElla     = exchanges.reduce((s,e) => s+e.uyuElla, 0);
+  const brlRcvYo     = exchanges.reduce((s,e) => s+e.brlYo, 0);
+  const brlRcvElla   = exchanges.reduce((s,e) => s+e.brlElla, 0);
+  const brlSpentYo   = gastos.reduce((s,g) => s+g.yo, 0);
+  const brlSpentElla = gastos.reduce((s,g) => s+g.ella, 0);
   return {
     exchYo, exchElla,
-    remUYUYo: budgets.yo - exchYo,
-    remUYUElla: budgets.ella - exchElla,
+    remUYUYo:     budgets.yo   - exchYo,
+    remUYUElla:   budgets.ella - exchElla,
     brlRcvYo, brlRcvElla,
-    brlAvailYo: brlRcvYo - brlSpentYo,
+    brlAvailYo:   brlRcvYo   - brlSpentYo,
     brlAvailElla: brlRcvElla - brlSpentElla,
     brlSpentYo, brlSpentElla,
     totalBRLAvail: (brlRcvYo - brlSpentYo) + (brlRcvElla - brlSpentElla),
@@ -250,35 +351,64 @@ function derived(){
   };
 }
 
-function goTab(t){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+// ── Init ───────────────────────────────────────────────────────
+async function init() {
+  loadCache();
+  renderDashboard();
+  updateOfflineBar();
+  if (isOnline) {
+    try {
+      document.getElementById('sync-status').textContent = '🔄 Sincronizando...';
+      await processPending();
+      await loadFromDB();
+      renderCurrent();
+      document.getElementById('sync-status').textContent = '☁️ Sincronizado';
+    } catch(e) {
+      document.getElementById('sync-status').textContent = '⚠️ Error al conectar';
+      console.error(e);
+    }
+  }
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(console.error);
+  }
+}
+
+function renderCurrent() {
+  if (currentTab === 'dashboard') renderDashboard();
+  else if (currentTab === 'cambiar') renderExchanges();
+  else if (currentTab === 'historial') renderHistorial();
+  else if (currentTab === 'config') loadConfig();
+}
+
+// ── Navegación ─────────────────────────────────────────────────
+function goTab(t) {
+  currentTab = t;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
   document.getElementById('page-'+t).classList.add('active');
-  const tabs = ['dashboard','cambiar','gastar','historial','config'];
-  document.querySelectorAll('.tab')[tabs.indexOf(t)].classList.add('active');
-  if(t==='dashboard') renderDashboard();
-  if(t==='cambiar') renderExchanges();
-  if(t==='historial') renderHistorial();
-  if(t==='config') loadConfig();
-  window.scrollTo(0,0);
+  ['dashboard','cambiar','gastar','historial','config'].forEach((n,i) => {
+    if (n === t) document.querySelectorAll('.tab')[i].classList.add('active');
+  });
+  if (t === 'dashboard') renderDashboard();
+  if (t === 'cambiar')   renderExchanges();
+  if (t === 'historial') renderHistorial();
+  if (t === 'config')    loadConfig();
+  window.scrollTo(0, 0);
 }
 
-function colorVal(v){
-  if(v<=0) return 'danger';
-  if(v<=200) return 'warn';
-  return 'ok';
-}
+function colorVal(v) { return v <= 0 ? 'danger' : v <= 200 ? 'warn' : 'ok'; }
 
-function renderDashboard(){
+// ── Dashboard ──────────────────────────────────────────────────
+function renderDashboard() {
   const d = derived();
   let alertsHTML = '';
-  if(d.brlRcvYo > 0 && d.brlAvailYo < 200)
+  if (d.brlRcvYo > 0 && d.brlAvailYo < 200)
     alertsHTML += `<div class="alert">⚠️ <span>Yo tengo pocos reales (R$ ${fmtR(Math.max(0,d.brlAvailYo))}). Considerá cambiar más.</span></div>`;
-  if(d.brlRcvElla > 0 && d.brlAvailElla < 200)
+  if (d.brlRcvElla > 0 && d.brlAvailElla < 200)
     alertsHTML += `<div class="alert">⚠️ <span>Ella tiene pocos reales (R$ ${fmtR(Math.max(0,d.brlAvailElla))}). Considerá cambiar más.</span></div>`;
   document.getElementById('alerts').innerHTML = alertsHTML;
 
-  const pBrlYo = d.brlRcvYo > 0 ? Math.min(100, Math.round(d.brlSpentYo/d.brlRcvYo*100)) : 0;
+  const pBrlYo = d.brlRcvYo   > 0 ? Math.min(100, Math.round(d.brlSpentYo/d.brlRcvYo*100))     : 0;
   const pBrlEl = d.brlRcvElla > 0 ? Math.min(100, Math.round(d.brlSpentElla/d.brlRcvElla*100)) : 0;
   document.getElementById('brl-cards').innerHTML = `
     <div class="metric">
@@ -321,104 +451,124 @@ function renderDashboard(){
     </div>`;
 }
 
-function updatePreview(){
+// ── Cambiar ────────────────────────────────────────────────────
+function updatePreview() {
   const rate = getRate();
-  const uYo = parseFloat(document.getElementById('c-uyu-yo').value)||0;
-  const uElla = parseFloat(document.getElementById('c-uyu-ella').value)||0;
-  if(!uYo && !uElla){ document.getElementById('c-preview').innerHTML='Ingresá los montos para ver el resultado.'; return; }
-  const bYo = uYo / rate;
-  const bElla = uElla / rate;
+  const uYo   = parseFloat(document.getElementById('c-uyu-yo').value)   || 0;
+  const uElla = parseFloat(document.getElementById('c-uyu-ella').value) || 0;
+  if (!uYo && !uElla) { document.getElementById('c-preview').innerHTML = 'Ingresá los montos para ver el resultado.'; return; }
   document.getElementById('c-preview').innerHTML =
-    `Yo: <strong>$${fmt(uYo)} UYU → R$ ${fmtR(bYo)}</strong><br>Ella: <strong>$${fmt(uElla)} UYU → R$ ${fmtR(bElla)}</strong><br><span style="font-size:11px;color:#aaa">R$ 1 = $${rate} UYU</span>`;
+    `Yo: <strong>$${fmt(uYo)} UYU → R$ ${fmtR(uYo/rate)}</strong><br>Ella: <strong>$${fmt(uElla)} UYU → R$ ${fmtR(uElla/rate)}</strong><br><span style="font-size:11px;color:#aaa">R$ 1 = $${rate} UYU</span>`;
 }
 
-function addExchange(){
-  const rate = getRate();
-  const uYo = parseFloat(document.getElementById('c-uyu-yo').value)||0;
-  const uElla = parseFloat(document.getElementById('c-uyu-ella').value)||0;
+async function addExchange() {
+  const rate  = getRate();
+  const uYo   = parseFloat(document.getElementById('c-uyu-yo').value)   || 0;
+  const uElla = parseFloat(document.getElementById('c-uyu-ella').value) || 0;
   const d = derived();
-  if(!uYo && !uElla){ alert('Ingresá al menos un monto.'); return; }
-  if(uYo > d.remUYUYo){ alert(`Yo no tengo suficientes pesos.\nDisponible: $${fmt(d.remUYUYo)}`); return; }
-  if(uElla > d.remUYUElla){ alert(`Ella no tiene suficientes pesos.\nDisponible: $${fmt(d.remUYUElla)}`); return; }
-  exchanges.push({ date:today(), uyuYo:uYo, uyuElla:uElla, rate, brlYo:uYo/rate, brlElla:uElla/rate });
-  save();
-  document.getElementById('c-uyu-yo').value='';
-  document.getElementById('c-uyu-ella').value='';
-  document.getElementById('c-preview').innerHTML='Ingresá los montos para ver el resultado.';
+  if (!uYo && !uElla)          { alert('Ingresá al menos un monto.'); return; }
+  if (uYo   > d.remUYUYo)   { alert(`Yo no tengo suficientes pesos.\nDisponible: $${fmt(d.remUYUYo)}`);   return; }
+  if (uElla > d.remUYUElla) { alert(`Ella no tiene suficientes pesos.\nDisponible: $${fmt(d.remUYUElla)}`); return; }
+
+  const id  = uid();
+  const rec = { id, date: today(), uyuYo: uYo, uyuElla: uElla, rate, brlYo: uYo/rate, brlElla: uElla/rate };
+  exchanges.push(rec);
+  saveCache();
+
+  const dbRec = { id, date: rec.date, uyu_yo: uYo, uyu_ella: uElla, rate, brl_yo: uYo/rate, brl_ella: uElla/rate };
+  if (isOnline) await db.from('exchanges').insert(dbRec);
+  else { pending.push({ op: 'insert_exchange', data: dbRec }); savePending(); }
+
+  document.getElementById('c-uyu-yo').value   = '';
+  document.getElementById('c-uyu-ella').value = '';
+  document.getElementById('c-preview').innerHTML = 'Ingresá los montos para ver el resultado.';
   renderExchanges();
   goTab('dashboard');
+  toast('💱 Cambio registrado');
 }
 
-function renderExchanges(){
+function renderExchanges() {
   const el = document.getElementById('exchange-list');
-  if(!exchanges.length){ el.innerHTML='<div class="empty">Sin cambios registrados</div>'; return; }
-  el.innerHTML = [...exchanges].reverse().map((e,ri)=>{
-    const i = exchanges.length-1-ri;
-    return `<div class="list-item">
+  if (!exchanges.length) { el.innerHTML = '<div class="empty">Sin cambios registrados</div>'; return; }
+  el.innerHTML = [...exchanges].reverse().map(e => `
+    <div class="list-item">
       <div class="item-icon">💱</div>
       <div class="item-info">
         <div class="item-title">${e.date} · R$1 = $${e.rate}</div>
         <div class="item-sub">Yo: $${fmt(e.uyuYo)} → R$${fmtR(e.brlYo)} &nbsp;·&nbsp; Ella: $${fmt(e.uyuElla)} → R$${fmtR(e.brlElla)}</div>
       </div>
-      <button class="del" onclick="delExchange(${i})">🗑</button>
-    </div>`;
-  }).join('');
+      <button class="del" onclick="delExchange('${e.id}')">🗑</button>
+    </div>`).join('');
 }
 
-function delExchange(i){
-  if(confirm('¿Eliminar este cambio?')){ exchanges.splice(i,1); save(); renderExchanges(); }
+async function delExchange(id) {
+  if (!confirm('¿Eliminar este cambio?')) return;
+  exchanges = exchanges.filter(e => e.id !== id);
+  saveCache();
+  if (isOnline) await db.from('exchanges').delete().eq('id', id);
+  else { pending.push({ op: 'delete_exchange', id }); savePending(); }
+  renderExchanges();
+  toast('🗑 Cambio eliminado');
 }
 
-function setSplit(mode,btn){
+// ── Gastar ─────────────────────────────────────────────────────
+function setSplit(mode, btn) {
   splitMode = mode;
-  document.querySelectorAll('.spl').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.spl').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('custom-fields').style.display = mode==='custom'?'grid':'none';
+  document.getElementById('custom-fields').style.display = mode === 'custom' ? 'grid' : 'none';
   updateGastoPreview();
 }
 
-function calcGastoSplit(total){
-  if(splitMode==='50/50') return {yo:total/2, ella:total/2};
-  if(splitMode==='yo') return {yo:total, ella:0};
-  if(splitMode==='ella') return {yo:0, ella:total};
-  const yo = parseFloat(document.getElementById('g-yo').value)||0;
-  const ella = parseFloat(document.getElementById('g-ella').value)||0;
-  return {yo, ella};
+function calcGastoSplit(total) {
+  if (splitMode === '50/50') return { yo: total/2, ella: total/2 };
+  if (splitMode === 'yo')    return { yo: total,   ella: 0 };
+  if (splitMode === 'ella')  return { yo: 0,       ella: total };
+  return {
+    yo:   parseFloat(document.getElementById('g-yo').value)   || 0,
+    ella: parseFloat(document.getElementById('g-ella').value) || 0
+  };
 }
 
-function updateGastoPreview(){
-  const amt = parseFloat(document.getElementById('g-amount').value)||0;
-  if(!amt){ document.getElementById('g-preview').innerHTML='Ingresá el monto para ver la división.'; return; }
+function updateGastoPreview() {
+  const amt = parseFloat(document.getElementById('g-amount').value) || 0;
+  if (!amt) { document.getElementById('g-preview').innerHTML = 'Ingresá el monto para ver la división.'; return; }
   const s = calcGastoSplit(amt);
   const d = derived();
-  const wY = s.yo > d.brlAvailYo ? ` ⚠️` : '';
-  const wE = s.ella > d.brlAvailElla ? ` ⚠️` : '';
   document.getElementById('g-preview').innerHTML =
-    `Yo pago: <strong>R$ ${s.yo.toFixed(2)}</strong>${wY}<br>Ella paga: <strong>R$ ${s.ella.toFixed(2)}</strong>${wE}`;
+    `Yo pago: <strong>R$ ${s.yo.toFixed(2)}</strong>${s.yo > d.brlAvailYo ? ' ⚠️' : ''}<br>Ella paga: <strong>R$ ${s.ella.toFixed(2)}</strong>${s.ella > d.brlAvailElla ? ' ⚠️' : ''}`;
 }
 
-function addGasto(){
+async function addGasto() {
   const desc = document.getElementById('g-desc').value.trim();
-  const amt = parseFloat(document.getElementById('g-amount').value);
-  const cat = document.getElementById('g-cat').value;
-  if(!desc||!amt||amt<=0){ alert('Completá descripción y monto.'); return; }
-  const s = calcGastoSplit(amt);
-  gastos.push({ desc, amount:amt, cat, yo:s.yo, ella:s.ella, date:today() });
-  save();
-  document.getElementById('g-desc').value='';
-  document.getElementById('g-amount').value='';
-  document.getElementById('g-yo').value='';
-  document.getElementById('g-ella').value='';
-  document.getElementById('g-preview').innerHTML='Ingresá el monto para ver la división.';
+  const amt  = parseFloat(document.getElementById('g-amount').value);
+  const cat  = document.getElementById('g-cat').value;
+  if (!desc || !amt || amt <= 0) { alert('Completá descripción y monto.'); return; }
+  const s  = calcGastoSplit(amt);
+  const id = uid();
+  const rec = { id, desc, amount: amt, cat, yo: s.yo, ella: s.ella, date: today() };
+  gastos.push(rec);
+  saveCache();
+
+  const dbRec = { id, descripcion: desc, amount: amt, cat, yo: s.yo, ella: s.ella, date: today() };
+  if (isOnline) await db.from('gastos').insert(dbRec);
+  else { pending.push({ op: 'insert_gasto', data: dbRec }); savePending(); }
+
+  document.getElementById('g-desc').value   = '';
+  document.getElementById('g-amount').value = '';
+  document.getElementById('g-yo').value     = '';
+  document.getElementById('g-ella').value   = '';
+  document.getElementById('g-preview').innerHTML = 'Ingresá el monto para ver la división.';
   goTab('dashboard');
+  toast('✅ Gasto registrado');
 }
 
-function renderHistorial(){
+// ── Historial ──────────────────────────────────────────────────
+function renderHistorial() {
   const el = document.getElementById('gasto-list');
-  if(!gastos.length){ el.innerHTML='<div class="empty">Sin gastos registrados<br>🇧🇷</div>'; return; }
-  el.innerHTML = [...gastos].reverse().map((g,ri)=>{
-    const i = gastos.length-1-ri;
-    const lbl = g.yo===g.ella?'50/50': g.ella===0?'Solo Yo': g.yo===0?'Solo Ella':`Yo R$${fmtR(g.yo)} / Ella R$${fmtR(g.ella)}`;
+  if (!gastos.length) { el.innerHTML = '<div class="empty">Sin gastos registrados<br>🇧🇷</div>'; return; }
+  el.innerHTML = [...gastos].reverse().map(g => {
+    const lbl = g.yo === g.ella ? '50/50' : g.ella === 0 ? 'Solo Yo' : g.yo === 0 ? 'Solo Ella' : `Yo R$${fmtR(g.yo)} / Ella R$${fmtR(g.ella)}`;
     return `<div class="list-item">
       <div class="item-icon">${g.cat}</div>
       <div class="item-info">
@@ -429,38 +579,57 @@ function renderHistorial(){
         <div class="item-val">R$ ${g.amount.toFixed(2)}</div>
         <div class="item-sub2">Yo R$${fmtR(g.yo)} / Ella R$${fmtR(g.ella)}</div>
       </div>
-      <button class="del" onclick="delGasto(${i})">🗑</button>
+      <button class="del" onclick="delGasto('${g.id}')">🗑</button>
     </div>`;
   }).join('');
 }
 
-function delGasto(i){
-  if(confirm('¿Eliminar este gasto?')){ gastos.splice(i,1); save(); renderHistorial(); }
+async function delGasto(id) {
+  if (!confirm('¿Eliminar este gasto?')) return;
+  gastos = gastos.filter(g => g.id !== id);
+  saveCache();
+  if (isOnline) await db.from('gastos').delete().eq('id', id);
+  else { pending.push({ op: 'delete_gasto', id }); savePending(); }
+  renderHistorial();
+  toast('🗑 Gasto eliminado');
 }
 
-function loadConfig(){
-  document.getElementById('cfg-yo').value = budgets.yo;
+// ── Config ─────────────────────────────────────────────────────
+function loadConfig() {
+  document.getElementById('cfg-yo').value   = budgets.yo;
   document.getElementById('cfg-ella').value = budgets.ella;
-  document.getElementById('cfg-msg').style.display='none';
+  document.getElementById('cfg-msg').style.display = 'none';
 }
 
-function saveBudget(who){
-  const val = parseFloat(document.getElementById('cfg-'+who).value)||0;
+async function saveBudget(who) {
+  const val = parseFloat(document.getElementById('cfg-'+who).value) || 0;
   budgets[who] = val;
-  save();
+  saveCache();
+  const data = { id: who, amount: val };
+  if (isOnline) await db.from('budgets').upsert(data);
+  else { pending.push({ op: 'upsert_budget', data }); savePending(); }
   const msg = document.getElementById('cfg-msg');
-  msg.style.display='block';
-  setTimeout(()=>msg.style.display='none', 2500);
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 2500);
+  toast('✅ Presupuesto guardado');
 }
 
-function resetAll(){
-  if(confirm('¿Seguro? Se borran TODOS los datos.')){
-    exchanges=[]; gastos=[]; budgets={...DEFAULT_B};
-    save(); goTab('dashboard');
+async function resetAll() {
+  if (!confirm('¿Seguro? Se borran TODOS los datos.')) return;
+  exchanges = []; gastos = []; budgets = {...DEFAULT_B};
+  saveCache();
+  if (isOnline) {
+    await db.from('exchanges').delete().not('id', 'is', null);
+    await db.from('gastos').delete().not('id', 'is', null);
+    await db.from('budgets').upsert([{id:'yo',amount:DEFAULT_B.yo},{id:'ella',amount:DEFAULT_B.ella}]);
+  } else {
+    pending.push({ op: 'delete_all' }); savePending();
   }
+  goTab('dashboard');
+  toast('🗑 Todo reseteado');
 }
 
-renderDashboard();
+init();
 </script>
 </body>
 </html>

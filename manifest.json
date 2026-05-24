@@ -1,0 +1,10 @@
+{
+  "name": "Tracker Brasil 🇧🇷",
+  "short_name": "Tracker BR",
+  "start_url": "/tracker-brasil/",
+  "scope": "/tracker-brasil/",
+  "display": "standalone",
+  "background_color": "#f5f5f7",
+  "theme_color": "#534AB7",
+  "description": "Tracker de gastos para viaje a Brasil"
+}
