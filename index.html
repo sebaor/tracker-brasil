@@ -476,8 +476,12 @@ async function addExchange() {
   saveCache();
 
   const dbRec = { id, date: rec.date, uyu_yo: uYo, uyu_ella: uElla, rate, brl_yo: uYo/rate, brl_ella: uElla/rate };
-  if (isOnline) await db.from('exchanges').insert(dbRec);
-  else { pending.push({ op: 'insert_exchange', data: dbRec }); savePending(); }
+  if (isOnline) {
+    try {
+      const { error } = await db.from('exchanges').insert(dbRec);
+      if (error) throw error;
+    } catch(e) { pending.push({ op: 'insert_exchange', data: dbRec }); savePending(); console.error('insert_exchange failed:', e); }
+  } else { pending.push({ op: 'insert_exchange', data: dbRec }); savePending(); }
 
   document.getElementById('c-uyu-yo').value   = '';
   document.getElementById('c-uyu-ella').value = '';
@@ -505,8 +509,12 @@ async function delExchange(id) {
   if (!confirm('¿Eliminar este cambio?')) return;
   exchanges = exchanges.filter(e => e.id !== id);
   saveCache();
-  if (isOnline) await db.from('exchanges').delete().eq('id', id);
-  else { pending.push({ op: 'delete_exchange', id }); savePending(); }
+  if (isOnline) {
+    try {
+      const { error } = await db.from('exchanges').delete().eq('id', id);
+      if (error) throw error;
+    } catch(e) { pending.push({ op: 'delete_exchange', id }); savePending(); console.error('delete_exchange failed:', e); }
+  } else { pending.push({ op: 'delete_exchange', id }); savePending(); }
   renderExchanges();
   toast('🗑 Cambio eliminado');
 }
@@ -551,8 +559,12 @@ async function addGasto() {
   saveCache();
 
   const dbRec = { id, descripcion: desc, amount: amt, cat, yo: s.yo, ella: s.ella, date: today() };
-  if (isOnline) await db.from('gastos').insert(dbRec);
-  else { pending.push({ op: 'insert_gasto', data: dbRec }); savePending(); }
+  if (isOnline) {
+    try {
+      const { error } = await db.from('gastos').insert(dbRec);
+      if (error) throw error;
+    } catch(e) { pending.push({ op: 'insert_gasto', data: dbRec }); savePending(); console.error('insert_gasto failed:', e); }
+  } else { pending.push({ op: 'insert_gasto', data: dbRec }); savePending(); }
 
   document.getElementById('g-desc').value   = '';
   document.getElementById('g-amount').value = '';
@@ -588,8 +600,12 @@ async function delGasto(id) {
   if (!confirm('¿Eliminar este gasto?')) return;
   gastos = gastos.filter(g => g.id !== id);
   saveCache();
-  if (isOnline) await db.from('gastos').delete().eq('id', id);
-  else { pending.push({ op: 'delete_gasto', id }); savePending(); }
+  if (isOnline) {
+    try {
+      const { error } = await db.from('gastos').delete().eq('id', id);
+      if (error) throw error;
+    } catch(e) { pending.push({ op: 'delete_gasto', id }); savePending(); console.error('delete_gasto failed:', e); }
+  } else { pending.push({ op: 'delete_gasto', id }); savePending(); }
   renderHistorial();
   toast('🗑 Gasto eliminado');
 }
@@ -606,8 +622,12 @@ async function saveBudget(who) {
   budgets[who] = val;
   saveCache();
   const data = { id: who, amount: val };
-  if (isOnline) await db.from('budgets').upsert(data);
-  else { pending.push({ op: 'upsert_budget', data }); savePending(); }
+  if (isOnline) {
+    try {
+      const { error } = await db.from('budgets').upsert(data);
+      if (error) throw error;
+    } catch(e) { pending.push({ op: 'upsert_budget', data }); savePending(); console.error('upsert_budget failed:', e); }
+  } else { pending.push({ op: 'upsert_budget', data }); savePending(); }
   const msg = document.getElementById('cfg-msg');
   msg.style.display = 'block';
   setTimeout(() => msg.style.display = 'none', 2500);
@@ -619,9 +639,12 @@ async function resetAll() {
   exchanges = []; gastos = []; budgets = {...DEFAULT_B};
   saveCache();
   if (isOnline) {
-    await db.from('exchanges').delete().not('id', 'is', null);
-    await db.from('gastos').delete().not('id', 'is', null);
-    await db.from('budgets').upsert([{id:'yo',amount:DEFAULT_B.yo},{id:'ella',amount:DEFAULT_B.ella}]);
+    try {
+      await db.from('exchanges').delete().not('id', 'is', null);
+      await db.from('gastos').delete().not('id', 'is', null);
+      const { error } = await db.from('budgets').upsert([{id:'yo',amount:DEFAULT_B.yo},{id:'ella',amount:DEFAULT_B.ella}]);
+      if (error) throw error;
+    } catch(e) { pending.push({ op: 'delete_all' }); savePending(); console.error('resetAll failed:', e); }
   } else {
     pending.push({ op: 'delete_all' }); savePending();
   }
